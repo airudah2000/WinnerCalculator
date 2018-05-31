@@ -1,7 +1,6 @@
 package com.db.exercise
 
 import org.apache.spark.sql._
-import scala.collection.mutable
 
 
 class DFRunner(val spark: SparkSession) {
@@ -24,6 +23,7 @@ class DFRunner(val spark: SparkSession) {
     import org.apache.spark.sql.functions._
     import scala.collection.JavaConverters._
 
+    // Lets get two collections. One for each file
     val playerTeamMap: Map[String, DataFrame] = extracted
       .filter(_._1 == "TEAMS")
       .map({ case (k, v) => k -> v.toDF("player", "team") })
@@ -34,37 +34,43 @@ class DFRunner(val spark: SparkSession) {
         k -> v.withColumn("_c2", v("_c2").cast(sql.types.DoubleType)).toDF("player", "day", "score")
       })
 
-    val summedUp: Option[Dataset[Row]] = playerScoresMap.values.map(x => x.groupBy("player")
+    // Sum up each players' score and sort by players score
+    val playersTotalScores: Option[Dataset[Row]] = playerScoresMap.values.map(_.groupBy("player")
       .sum("score")
       .sort(desc("sum(score)")))
       .headOption
 
-
-    val maximumScore: Double = playerScoresMap.map(x => x._2.groupBy("player")
-      .sum("score")
-      .sort(desc("sum(score)"))
-      .select("sum(score)")
-      .collectAsList()
-      .asScala
-      .map(y => y.getAs[Double]("sum(score)")))
-      .headOption match {
-      case Some(xx) => xx.max
+    // Find the highest overall score
+    val maximumPlayerScore: Double = playersTotalScores match {
+      case Some(ds: Dataset[Row]) =>
+//        ds.show() // TODO: display instead as a log.debug
+        ds.collectAsList()
+          .asScala
+          .map(y => y.getAs[Double]("sum(score)"))
+          .max
       case None => 0
     }
 
-    println(s"maximumScore = ${maximumScore}")
-    summedUp match {
-      case Some(row: Dataset[Row]) => row.show()
-      case None =>
-    }
+//    println(s"The maximum score is: [$maximumPlayerScore]") // TODO: display instead as a log.info
 
-
-    val playersWithMaxScore: DataFrame = summedUp match {
-      case Some(row: Dataset[Row]) => row.toDF()
+    // Find all players with the Maximum score
+    val playersWithMaxScore: DataFrame = playersTotalScores match {
+      case Some(row: Dataset[Row]) => row.filter(r => r.getAs[Double]("sum(score)") == maximumPlayerScore)
       case None => spark.emptyDataFrame
     }
 
-    playersWithMaxScore.show()
+//    playersWithMaxScore.show() // TODO: display instead as a log.debug
+
+    /** Do the Team bit */
+
+    def playersTeamScoreMap: DataFrame = {
+      val totalScoresDF: DataFrame = playersTotalScores.get.toDF() //OrElse(spark.emptyDataset).toDF()
+      val playerTeamDF: DataFrame = playerTeamMap.values.headOption.get.toDF() //OrElse(spark.emptyDataset).toDF()
+      playerTeamDF.join(totalScoresDF, "player")//.select("player", "team", "score")
+    }
+
+    playerTeamMap.values.head.toDF().show()
+    playerScoresMap.values.foreach(_.show())
 
     ???
   }
