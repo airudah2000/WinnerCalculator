@@ -1,0 +1,88 @@
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0mInitial source changes: [0m
+[0m[[0mdebug[0m] [0m	removed:Set()[0m
+[0m[[0mdebug[0m] [0m	added: Set(/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala, /home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala, /home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala)[0m
+[0m[[0mdebug[0m] [0m	modified: Set()[0m
+[0m[[0mdebug[0m] [0mRemoved products: Set()[0m
+[0m[[0mdebug[0m] [0mExternal API changes: API Changes: Set()[0m
+[0m[[0mdebug[0m] [0mModified binary dependencies: Set()[0m
+[0m[[0mdebug[0m] [0mInitial directly invalidated sources: Set(/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala, /home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala, /home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala)[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0mSources indirectly invalidated by:[0m
+[0m[[0mdebug[0m] [0m	product: Set()[0m
+[0m[[0mdebug[0m] [0m	binary dep: Set()[0m
+[0m[[0mdebug[0m] [0m	external source: Set()[0m
+[0m[[0mdebug[0m] [0mAll initially invalidated sources: Set(/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala, /home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala, /home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala)[0m
+[0m[[0mdebug[0m] [0mRecompiling all 3 sources: invalidated sources (3) exceeded 50.0% of all sources[0m
+[0m[[0minfo[0m] [0mCompiling 3 Scala sources to /home/robert/Development/prototype/Deutsche/target/scala-2.10/classes...[0m
+[0m[[0mdebug[0m] [0mGetting compiler-interface from component compiler for Scala 2.10.4[0m
+[0m[[0mdebug[0m] [0mGetting compiler-interface from component compiler for Scala 2.10.4[0m
+[0m[[0mdebug[0m] [0mRunning cached compiler 4b68e470, interfacing (CompilerInterface) with Scala compiler version 2.10.4[0m
+[0m[[0mdebug[0m] [0mCalling Scala compiler with arguments  (CompilerInterface):[0m
+[0m[[0mdebug[0m] [0m	-bootclasspath[0m
+[0m[[0mdebug[0m] [0m	/opt/jdk/jdk1.8.0_77/jre/lib/resources.jar:/opt/jdk/jdk1.8.0_77/jre/lib/rt.jar:/opt/jdk/jdk1.8.0_77/jre/lib/sunrsasign.jar:/opt/jdk/jdk1.8.0_77/jre/lib/jsse.jar:/opt/jdk/jdk1.8.0_77/jre/lib/jce.jar:/opt/jdk/jdk1.8.0_77/jre/lib/charsets.jar:/opt/jdk/jdk1.8.0_77/jre/lib/jfr.jar:/opt/jdk/jdk1.8.0_77/jre/classes:/home/robert/.sbt/boot/scala-2.10.4/lib/scala-library.jar[0m
+[0m[[0mdebug[0m] [0m	-classpath[0m
+[0m[[0mdebug[0m] [0m	/home/robert/Development/prototype/Deutsche/target/scala-2.10/classes[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:3: object apache is not a member of package org[0m
+[0m[[31merror[0m] [0mimport org.apache.spark.{SparkConf, SparkContext}[0m
+[0m[[31merror[0m] [0m           ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:4: object apache is not a member of package org[0m
+[0m[[31merror[0m] [0mimport org.apache.spark.sql.SparkSession[0m
+[0m[[31merror[0m] [0m           ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:76: not found: type SparkConf[0m
+[0m[[31merror[0m] [0m    val conf: SparkConf = new SparkConf().setAppName(appName).setMaster(master)[0m
+[0m[[31merror[0m] [0m              ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:76: not found: type SparkConf[0m
+[0m[[31merror[0m] [0m    val conf: SparkConf = new SparkConf().setAppName(appName).setMaster(master)[0m
+[0m[[31merror[0m] [0m                              ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:77: not found: type SparkContext[0m
+[0m[[31merror[0m] [0m    val sc = new SparkContext(conf)[0m
+[0m[[31merror[0m] [0m                 ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:78: not found: type SparkSession[0m
+[0m[[31merror[0m] [0m    val spark: SparkSession = SparkSession.builder().appName(appName).master(master).getOrCreate()[0m
+[0m[[31merror[0m] [0m               ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/App.scala:78: not found: value SparkSession[0m
+[0m[[31merror[0m] [0m    val spark: SparkSession = SparkSession.builder().appName(appName).master(master).getOrCreate()[0m
+[0m[[31merror[0m] [0m                              ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:3: object apache is not a member of package org[0m
+[0m[[31merror[0m] [0mimport org.apache.spark.SparkContext[0m
+[0m[[31merror[0m] [0m           ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:6: not found: type SparkContext[0m
+[0m[[31merror[0m] [0mclass RDDRunner(val context: SparkContext) {[0m
+[0m[[31merror[0m] [0m                             ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:4: object apache is not a member of package org[0m
+[0m[[31merror[0m] [0mimport org.apache.spark.rdd.RDD[0m
+[0m[[31merror[0m] [0m           ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:11: not found: type RDD[0m
+[0m[[31merror[0m] [0m  def extract(input: Map[String, String]): Map[String, RDD[AnyRef]] = ???[0m
+[0m[[31merror[0m] [0m                                                       ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:17: not found: type RDD[0m
+[0m[[31merror[0m] [0m  def transform(extracted: Map[String, RDD[AnyRef]]): RDD[AnyRef] = ???[0m
+[0m[[31merror[0m] [0m                                                      ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:17: not found: type RDD[0m
+[0m[[31merror[0m] [0m  def transform(extracted: Map[String, RDD[AnyRef]]): RDD[AnyRef] = ???[0m
+[0m[[31merror[0m] [0m                                       ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/RDDRunner.scala:23: not found: type RDD[0m
+[0m[[31merror[0m] [0m  def load(transformed: RDD[AnyRef], path: String): Unit = ???[0m
+[0m[[31merror[0m] [0m                        ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala:3: object apache is not a member of package org[0m
+[0m[[31merror[0m] [0mimport org.apache.spark.sql.{DataFrame, SparkSession}[0m
+[0m[[31merror[0m] [0m           ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala:6: not found: type SparkSession[0m
+[0m[[31merror[0m] [0mclass DFRunner(val spark: SparkSession) {[0m
+[0m[[31merror[0m] [0m                          ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala:11: not found: type DataFrame[0m
+[0m[[31merror[0m] [0m  def extract(input: Map[String, String]): Map[String, DataFrame] = ???[0m
+[0m[[31merror[0m] [0m                                                       ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala:17: not found: type DataFrame[0m
+[0m[[31merror[0m] [0m  def transform(extracted: Map[String, DataFrame]): DataFrame = ???[0m
+[0m[[31merror[0m] [0m                                                    ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala:17: not found: type DataFrame[0m
+[0m[[31merror[0m] [0m  def transform(extracted: Map[String, DataFrame]): DataFrame = ???[0m
+[0m[[31merror[0m] [0m                                       ^[0m
+[0m[[31merror[0m] [0m/home/robert/Development/prototype/Deutsche/src/main/scala/com/db/exercise/DFRunner.scala:23: not found: type DataFrame[0m
+[0m[[31merror[0m] [0m  def load(transformed: DataFrame, path: String): Unit = ???[0m
+[0m[[31merror[0m] [0m                        ^[0m
+[0m[[31merror[0m] [0m20 errors found[0m
+[0m[[0mdebug[0m] [0mCompilation failed (CompilerInterface)[0m
+[0m[[31merror[0m] [0m(compile:[31mcompileIncremental[0m) Compilation failed[0m
