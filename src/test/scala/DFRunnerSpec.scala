@@ -9,19 +9,17 @@ import org.scalatest.FunSuite
 
 class DFRunnerSpec extends FunSuite {
 
+  new SparkContext(new SparkConf().setAppName(appName).setMaster(master)).setLogLevel(Level.OFF.toString) //Turn off Excessive logging
+
   final val appName = "DataFrame-Test"
   final val master = "local[*]"
-  final val conf: SparkConf = new SparkConf()
-    .setAppName(appName)
-    .setMaster(master)
-  final val sc = new SparkContext(conf)
-  sc.setLogLevel(Level.OFF.toString) //Stops excessive logging in the console
   final val spark: SparkSession = SparkSession.builder()
     .appName(appName)
     .master(master)
     .getOrCreate()
   final val teamsFilePath = "src/main/resources/teams.dat"
   final val scoresFilePath = "src/main/resources/scores.dat"
+
 
   test("Extract"){
     val dfRunner = new DFRunner(spark)
