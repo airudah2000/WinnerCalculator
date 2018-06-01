@@ -1,14 +1,22 @@
 package com.db.exercise
 
 import java.io.{File, FileNotFoundException}
-
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.DoubleType
-
 import scala.collection.JavaConverters._
 
 class DFRunner(val spark: SparkSession) {
+
+  //Just some constants.. to avoid typos
+  final val TEAMS  = "TEAMS"
+  final val SCORES = "SCORES"
+  final val winner = "winner"
+  final val score  = "score"
+  final val day    = "day"
+  final val player = "player"
+  final val team   = "team"
+
   /**
     * @param input a map of the file paths to extract. The key is a [[String]] alias, the value is the [[String]] path of the file to extract.
     * @return a map of [[DataFrame]] per each input
@@ -27,26 +35,25 @@ class DFRunner(val spark: SparkSession) {
     * @return
     */
   def transform(extracted: Map[String, DataFrame]): DataFrame = {
-
     // Split into two collections. One for each expected file
-    val playerTeamMap: Map[String, DataFrame] = extracted.filter(_._1 == "TEAMS")
-    val playerScoresMap: Map[String, DataFrame] = extracted.filter(_._1 == "SCORES")
+    val playerTeamMap: Map[String, DataFrame] = extracted.filter(_._1 == TEAMS)
+    val playerScoresMap: Map[String, DataFrame] = extracted.filter(_._1 == SCORES)
 
     // TODO: checks that we have value in both files. Needs to be simplified
     if (playerTeamMap.values.head.collectAsList().isEmpty|| playerScoresMap.values.head.collectAsList().isEmpty) {
       spark.emptyDataFrame
     } else {
       // Name the columns
-      val playerScores = playerScoresMap.values.map(s => s.withColumn("_c2", s("_c2").cast(DoubleType)).toDF("player", "day", "score"))
-      val playerTeam = playerTeamMap.values.map(pt => pt.toDF("player", "team"))
+      val playerScores = playerScoresMap.values.map(s => s.withColumn("_c2", s("_c2").cast(DoubleType)).toDF(player, day, score)) //TODO: Not safe. Rename columns before cast
+      val playerTeam = playerTeamMap.values.map(pt => pt.toDF(player, team))
 
       // Sum up each players' score and sort by players score
-      val playersTotalScores: Option[Dataset[Row]] = playerScores.map(_.groupBy("player")
-        .sum("score")
+      val playersTotalScores: Option[Dataset[Row]] = playerScores.map(_.groupBy(player)
+        .sum(score)
         .sort(desc("sum(score)")))
         .headOption
 
-      playersTotalScores.get.show()
+//      playersTotalScores.get.show()
 
       // Find the maximum player score
       val maximumPlayerScore: Double = playersTotalScores match {
@@ -64,15 +71,23 @@ class DFRunner(val spark: SparkSession) {
         case None => spark.emptyDataFrame
       }
 
-      winningPlayers.show()
+//      winningPlayers.show()
+
+      def collatedWinners(df: DataFrame): DataFrame = {
+        df.toDF(winner, score)
+          .groupBy(score)
+          .agg(collect_list(winner).as(winner))
+          .withColumn(winner, concat_ws(",", col(winner))) //Multiple winners separated by comma as per requirement
+          .select(winner, score)
+      }
 
       //Sum up each team's score and sort by scores
       def winningTeams: DataFrame = {
         val totalScoresDF: DataFrame = playersTotalScores.getOrElse(spark.emptyDataFrame).toDF()
         val playerTeamDF: DataFrame = playerTeam.headOption.getOrElse(spark.emptyDataFrame).toDF()
 
-        val totalTeamScore = totalScoresDF.join(playerTeamDF, Seq("player"))
-          .groupBy("team")
+        val totalTeamScore = totalScoresDF.join(playerTeamDF, Seq(player))
+          .groupBy(team)
           .sum("sum(score)")
           .sort(desc("sum(sum(score))"))
 
@@ -83,14 +98,16 @@ class DFRunner(val spark: SparkSession) {
 
         val winningTeams = totalTeamScore.filter(row => row.getAs[Double]("sum(sum(score))")
           .equals(winningTeamScore))
-          .toDF("winner", "score")
+          .toDF(winner, score)
 
-        winningTeams.show()
+//        winningTeams.show()
         winningTeams
       }
 
-      winningPlayers union winningTeams toDF("winner", "score")
 
+      val winners = collatedWinners(winningTeams) union collatedWinners(winningPlayers)
+      winners.show
+      winners
     }
   }
 

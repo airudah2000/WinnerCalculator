@@ -44,10 +44,7 @@ class DFRunnerSpec extends FunSuite {
     val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
 
     val transformed = dfRunner.transform(extracted)
-
     assert(transformed.count() !== 0)
-
-    transformed.show()
   }
 
   test("Load") {
@@ -64,7 +61,8 @@ class DFRunnerSpec extends FunSuite {
     val br = new BufferedReader(new FileReader(outputFile))
     val lines = br.lines().toArray.toList.map(_.toString)
 
-    assert(lines.head === "PLAYER1,11.299999999999999")
+    assert(lines.head === "TEAM2,20.65")
+    assert(lines(1) === "PLAYER1,11.299999999999999")
   }
 
   test("Empty Files"){
@@ -120,10 +118,9 @@ class DFRunnerSpec extends FunSuite {
     // Test multiple winning players
     val dataToTransform = Map("TEAMS" -> playerTeamDataFrame, "SCORES" -> playersScoreDataFrame)
     val transformed = dfRunner.transform(dataToTransform)
-    transformed.show()
 
-    assert(transformed.collectAsList().size() === 3) // Expecting three results. Two for the tied players and one for the winning team
-    assert(transformed.collectAsList().get(0).getAs[Double]("score") === transformed.collectAsList().get(1).getAs[Double]("score"))
+    assert(transformed.collectAsList().size() === 2) // Expecting two lines of winners, One each for the winning teams and winning players
+    assert(transformed.collectAsList().get(0).getAs[Double]("score") === 49) //Winning Team score should be 49
 
     //Test multiple winning teams
     val playersScoreDataFrame2 = Seq(
@@ -142,10 +139,9 @@ class DFRunnerSpec extends FunSuite {
 
     val dataToTransform2 = Map("TEAMS" -> playerTeamDataFrame, "SCORES" -> playersScoreDataFrame2)
     val transformed2 = dfRunner.transform(dataToTransform2)
-    transformed2.show()
 
-    assert(transformed2.collectAsList().size() === 3) // Expecting three results. Two for the tied teams and one for the winning player
-    assert(transformed2.collectAsList().get(1).getAs[Double]("score") === transformed.collectAsList().get(2).getAs[Double]("score"))
+    assert(transformed2.collectAsList().size() === 2) // Expecting two lines of winners, One each for the winning teams and winning players
+    assert(transformed2.collectAsList().get(0).getAs[Double]("score") === transformed2.collectAsList().get(1).getAs[Double]("score")) //Both Winning Player and winning team have the same score
 
   }
 
