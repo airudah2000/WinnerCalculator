@@ -1,6 +1,7 @@
 package com.db.exercise
 
-import java.util.logging.{Level, Logger}
+import java.io.{BufferedReader, File, FileReader}
+import java.util.logging.Level
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -8,14 +9,13 @@ import org.scalatest.FunSuite
 
 class DFRunnerSpec extends FunSuite {
 
-  Logger.getLogger("com.db.exercise").setLevel(Level.OFF)
-
   final val appName = "DataFrame-Test"
   final val master = "local[*]"
   final val conf: SparkConf = new SparkConf()
     .setAppName(appName)
     .setMaster(master)
   final val sc = new SparkContext(conf)
+  sc.setLogLevel(Level.OFF.toString) //Stops excessive logging in the console
   final val spark: SparkSession = SparkSession.builder()
     .appName(appName)
     .master(master)
@@ -23,10 +23,10 @@ class DFRunnerSpec extends FunSuite {
   final val teamsFilePath = "src/main/resources/teams.dat"
   final val scoresFilePath = "src/main/resources/scores.dat"
 
-  ignore("Extract"){
+  test("Extract"){
     val dfRunner = new DFRunner(spark)
     val input = Map.newBuilder[String, String]
-    input.+=("Test Extract" -> scoresFilePath)
+    input.+=("TEAMS" -> scoresFilePath)
     val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
 
     extracted.values.foreach(_.show())
@@ -34,10 +34,9 @@ class DFRunnerSpec extends FunSuite {
     assert(extracted.headOption.nonEmpty)
     assert(extracted.head._1 === input.result().head._1)
     assert(extracted.head._2.toDF().head().toString() === "[PLAYER1, DAY1, 8.95]")
-
   }
 
-  ignore("Transform") {
+  test("Transform") {
     val dfRunner = new DFRunner(spark)
     val input = Map.newBuilder[String, String]
     input.+=("TEAMS" -> teamsFilePath)
@@ -58,14 +57,95 @@ class DFRunnerSpec extends FunSuite {
     input.+=("SCORES" -> scoresFilePath)
     val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
     val transformed = dfRunner.transform(extracted)
-    val outputFilePath = "src/test/resources/result.dat"
+    val outputFilePath = "src/test/resources/DataFrameTestResult.dat"
     dfRunner.load(transformed, outputFilePath)
 
-    val output = Map.newBuilder[String, String]
-    output.+=("RESULT" -> outputFilePath)
-    val outputResult = dfRunner.extract(output.result())
+    val outputFile = new File(outputFilePath)
+    val br = new BufferedReader(new FileReader(outputFile))
+    val lines = br.lines().toArray.toList.map(_.toString)
 
-    assert(outputResult.values.head.toString() == "GGG")
+    assert(lines.head === "PLAYER1,11.299999999999999")
+  }
+
+  test("Empty Files"){
+    val emptyTeamsFilePath = "src/test/resources/emptyteams.dat"
+    val emptyScoresFilePath = "src/test/resources/emptyscores.dat"
+
+    val dfRunner = new DFRunner(spark)
+    val emptyInput = Map.newBuilder[String, String]
+    emptyInput.+=("TEAMS" -> emptyTeamsFilePath)
+    emptyInput.+=("SCORES" -> emptyScoresFilePath)
+    val extracted: Map[String, DataFrame] = dfRunner.extract(emptyInput.result())
+
+    extracted.foreach(_._2.show()) // Expects empty data frames
+
+    val transformed = dfRunner.transform(extracted)
+
+    val thrown = intercept[Exception]{
+      dfRunner.load(transformed, "")
+    }
+
+    assert(thrown.getMessage === "DataFrame is empty. Nothing to write")
+  }
+
+  test("Multiple Winners"){
+    import spark.implicits._
+
+    val playersScoreDataFrame = Seq(
+      ("PLAYER1", "DAY1", "8.95"),
+      ("PLAYER1", "DAY2", "10.05"),
+      // Player 1 total score = 19.0
+      ("PLAYER2", "DAY1", "10.00"),
+      ("PLAYER2", "DAY2", "9.00"),
+      // Player 2 total score = 19.0
+      ("PLAYER3", "DAY1", "7.30"),
+      ("PLAYER3", "DAY2", "3.70"),
+      ("PLAYER4", "DAY3", "3.20"),
+      ("PLAYER5", "DAY3", "4.30"),
+      ("PLAYER6", "DAY3", "5.40")
+    ).toDF("_c0", "_c1", "_c2")
+
+    val playerTeamDataFrame = Seq(
+      ("PLAYER1", "TEAM1"),
+      ("PLAYER2", "TEAM1"),
+      ("PLAYER3", "TEAM1"),
+      ("PLAYER4", "TEAM2"),
+      ("PLAYER5", "TEAM2"),
+      ("PLAYER6", "TEAM3"),
+      ("PLAYER7", "TEAM3")
+    ).toDF("_c0", "_c1")
+
+    val dfRunner = new DFRunner(spark)
+
+    // Test multiple winning players
+    val dataToTransform = Map("TEAMS" -> playerTeamDataFrame, "SCORES" -> playersScoreDataFrame)
+    val transformed = dfRunner.transform(dataToTransform)
+    transformed.show()
+
+    assert(transformed.collectAsList().size() === 3) // Expecting three results. Two for the tied players and one for the winning team
+    assert(transformed.collectAsList().get(0).getAs[Double]("score") === transformed.collectAsList().get(1).getAs[Double]("score"))
+
+    //Test multiple winning teams
+    val playersScoreDataFrame2 = Seq(
+      ("PLAYER1", "DAY1", "8.95"),
+      ("PLAYER1", "DAY2", "10.05"),
+      // Player 1 total score = 19.0
+      ("PLAYER2", "DAY1", "10.00"),
+      ("PLAYER2", "DAY2", "9.00"),
+      // Player 2 total score = 19.0
+      ("PLAYER3", "DAY1", "7.30"),
+      ("PLAYER3", "DAY2", "3.70"),
+      ("PLAYER4", "DAY3", "3.20"),
+      ("PLAYER5", "DAY3", "4.30"),
+      ("PLAYER6", "DAY3", "49.0")
+    ).toDF("_c0", "_c1", "_c2")
+
+    val dataToTransform2 = Map("TEAMS" -> playerTeamDataFrame, "SCORES" -> playersScoreDataFrame2)
+    val transformed2 = dfRunner.transform(dataToTransform2)
+    transformed2.show()
+
+    assert(transformed2.collectAsList().size() === 3) // Expecting three results. Two for the tied teams and one for the winning player
+    assert(transformed2.collectAsList().get(1).getAs[Double]("score") === transformed.collectAsList().get(2).getAs[Double]("score"))
 
   }
 
