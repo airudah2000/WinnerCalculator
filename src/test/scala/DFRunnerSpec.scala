@@ -1,10 +1,14 @@
 package com.db.exercise
 
+import java.util.logging.{Level, Logger}
+
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.FunSuite
 
 class DFRunnerSpec extends FunSuite {
+
+  Logger.getLogger("com.db.exercise").setLevel(Level.OFF)
 
   final val appName = "DataFrame-Test"
   final val master = "local[*]"
@@ -33,7 +37,7 @@ class DFRunnerSpec extends FunSuite {
 
   }
 
-  test("Transform") {
+  ignore("Transform") {
     val dfRunner = new DFRunner(spark)
     val input = Map.newBuilder[String, String]
     input.+=("TEAMS" -> teamsFilePath)
@@ -43,6 +47,26 @@ class DFRunnerSpec extends FunSuite {
     val transformed = dfRunner.transform(extracted)
 
     assert(transformed.count() !== 0)
+
+    transformed.show()
+  }
+
+  test("Load") {
+    val dfRunner = new DFRunner(spark)
+    val input = Map.newBuilder[String, String]
+    input.+=("TEAMS" -> teamsFilePath)
+    input.+=("SCORES" -> scoresFilePath)
+    val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
+    val transformed = dfRunner.transform(extracted)
+    val outputFilePath = "src/test/resources/result.dat"
+    dfRunner.load(transformed, outputFilePath)
+
+    val output = Map.newBuilder[String, String]
+    output.+=("RESULT" -> outputFilePath)
+    val outputResult = dfRunner.extract(output.result())
+
+    assert(outputResult.values.head.toString() == "GGG")
+
   }
 
 }
