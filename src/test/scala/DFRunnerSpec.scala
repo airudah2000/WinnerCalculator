@@ -7,7 +7,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.FunSuite
 
-class DFRunnerSpec extends FunSuite {
+class DFRunnerSpec extends FunSuite with Util {
 
   new SparkContext(new SparkConf().setAppName(appName).setMaster(master)).setLogLevel(Level.OFF.toString) //Turn off Excessive logging
 
@@ -24,7 +24,7 @@ class DFRunnerSpec extends FunSuite {
   test("Extract"){
     val dfRunner = new DFRunner(spark)
     val input = Map.newBuilder[String, String]
-    input.+=("TEAMS" -> scoresFilePath)
+    input.+=(SCORES -> scoresFilePath)
     val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
 
     extracted.values.foreach(_.show())
@@ -37,8 +37,8 @@ class DFRunnerSpec extends FunSuite {
   test("Transform") {
     val dfRunner = new DFRunner(spark)
     val input = Map.newBuilder[String, String]
-    input.+=("TEAMS" -> teamsFilePath)
-    input.+=("SCORES" -> scoresFilePath)
+    input.+=(TEAMS -> teamsFilePath)
+    input.+=(SCORES -> scoresFilePath)
     val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
 
     val transformed = dfRunner.transform(extracted)
@@ -48,8 +48,8 @@ class DFRunnerSpec extends FunSuite {
   test("Load") {
     val dfRunner = new DFRunner(spark)
     val input = Map.newBuilder[String, String]
-    input.+=("TEAMS" -> teamsFilePath)
-    input.+=("SCORES" -> scoresFilePath)
+    input.+=(TEAMS -> teamsFilePath)
+    input.+=(SCORES -> scoresFilePath)
     val extracted: Map[String, DataFrame] = dfRunner.extract(input.result())
     val transformed = dfRunner.transform(extracted)
     val outputFilePath = "src/test/resources/DataFrameTestResult.dat"
@@ -69,8 +69,8 @@ class DFRunnerSpec extends FunSuite {
 
     val dfRunner = new DFRunner(spark)
     val emptyInput = Map.newBuilder[String, String]
-    emptyInput.+=("TEAMS" -> emptyTeamsFilePath)
-    emptyInput.+=("SCORES" -> emptyScoresFilePath)
+    emptyInput.+=(TEAMS -> emptyTeamsFilePath)
+    emptyInput.+=(SCORES -> emptyScoresFilePath)
     val extracted: Map[String, DataFrame] = dfRunner.extract(emptyInput.result())
 
     extracted.foreach(_._2.show()) // Expects empty data frames
@@ -114,7 +114,7 @@ class DFRunnerSpec extends FunSuite {
     val dfRunner = new DFRunner(spark)
 
     // Test multiple winning players
-    val dataToTransform = Map("TEAMS" -> playerTeamDataFrame, "SCORES" -> playersScoreDataFrame)
+    val dataToTransform = Map(TEAMS -> playerTeamDataFrame, SCORES -> playersScoreDataFrame)
     val transformed = dfRunner.transform(dataToTransform)
 
     assert(transformed.collectAsList().size() === 2) // Expecting two lines of winners, One each for the winning teams and winning players
@@ -135,7 +135,7 @@ class DFRunnerSpec extends FunSuite {
       ("PLAYER6", "DAY3", "49.0")
     ).toDF("_c0", "_c1", "_c2")
 
-    val dataToTransform2 = Map("TEAMS" -> playerTeamDataFrame, "SCORES" -> playersScoreDataFrame2)
+    val dataToTransform2 = Map(TEAMS -> playerTeamDataFrame, SCORES -> playersScoreDataFrame2)
     val transformed2 = dfRunner.transform(dataToTransform2)
 
     assert(transformed2.collectAsList().size() === 2) // Expecting two lines of winners, One each for the winning teams and winning players

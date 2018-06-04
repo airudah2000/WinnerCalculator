@@ -6,16 +6,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.DoubleType
 import scala.collection.JavaConverters._
 
-class DFRunner(val spark: SparkSession) {
-
-  //Just some constants.. to avoid typos
-  final val TEAMS  = "TEAMS"
-  final val SCORES = "SCORES"
-  final val winner = "winner"
-  final val score  = "score"
-  final val day    = "day"
-  final val player = "player"
-  final val team   = "team"
+class DFRunner(val spark: SparkSession) extends Util {
 
   /**
     * @param input a map of the file paths to extract. The key is a [[String]] alias, the value is the [[String]] path of the file to extract.
