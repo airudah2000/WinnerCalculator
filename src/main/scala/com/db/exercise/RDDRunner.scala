@@ -18,7 +18,7 @@ class RDDRunner(val context: SparkContext) extends Util {
         case TEAMS => {
           val teams: RDD[Game] = context.textFile(value)
             .map(x => x.split(","))
-            .map({ case Array(x: String, y: String) => Team(x, y.stripMargin) })
+            .map({ case Array(x: String, y: String) => Team(x, y.replace(" ", ""))} )
           key -> teams
         }
         case SCORES => {
@@ -47,10 +47,12 @@ class RDDRunner(val context: SparkContext) extends Util {
       .map(z => SomeScore(z._1, z._2.toList.map(_.playerScore.score).sum))
       .sortBy(_.score)
 
-    if(playerScoreBoard.isEmpty()) {
+    if (playerScoreBoard.isEmpty()) {
       context.parallelize(Seq.empty[Winner])
     } else {
-      val winningPlayer: Winner = playerScoreBoard.map(x => Winner(x.player, x.score))
+
+      val winningPlayer: Winner = playerScoreBoard.groupBy(psb => psb.score)
+        .map({ case (s, p) => Winner(p.map(_.player).mkString(","), s) })
         .sortBy(_.score, ascending = false) //Top score bubbles to the top
         .first()
 
@@ -66,12 +68,14 @@ class RDDRunner(val context: SparkContext) extends Util {
       }).seq
 
 
-      val winningTeam: Winner = context.parallelize(teamScoreBoard).groupBy(x => x.team)
-        .map({ case (x, y) => Winner(x, y.map(_.score).sum) })
+      val winningTeam: Winner = context.parallelize(teamScoreBoard).groupBy(tsb => tsb.team)
+        .map({ case (key, value) => key -> value.map(_.score).sum })
+        .groupBy(s => s._2)
+        .map({ case (score, winnerScore) => Winner(winnerScore.map(_._1).mkString(","), score) })
         .sortBy(_.score, ascending = false) //Top score bubbles to the top
         .first()
 
-      context.parallelize(Seq(winningTeam, winningPlayer))
+      context.makeRDD(Seq(winningTeam, winningPlayer))
     }
   }
 
@@ -84,8 +88,8 @@ class RDDRunner(val context: SparkContext) extends Util {
     val tmpDir = path + ".tmp"
 
     // FIXME: coalesce(1) Not efficient for large datasets
-    transformed.coalesce(1, false).sortBy(_.winner, ascending = true).map{ w =>
-      w.winner.stripMargin + "," + w.score.toString
+    transformed.coalesce(1, false)
+      .sortBy(_.winner.substring(0,1), ascending = false).map { w => w.winner.stripMargin + "," + w.score.toString
     }.saveAsTextFile(tmpDir)
 
     val dir = new File(tmpDir)

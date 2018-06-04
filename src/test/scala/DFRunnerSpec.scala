@@ -1,25 +1,12 @@
-package com.db.exercise
-
 import java.io.{BufferedReader, File, FileReader}
-import java.util.logging.Level
 
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import com.db.exercise.{DFRunner, Util}
+import org.apache.spark.sql.DataFrame
 import org.scalatest.FunSuite
 
-class DFRunnerSpec extends FunSuite with Util {
-
-  new SparkContext(new SparkConf().setAppName(appName).setMaster(master)).setLogLevel(Level.OFF.toString) //Turn off Excessive logging
-
-  final val appName = "DataFrame-Test"
-  final val master = "local[*]"
-  final val spark: SparkSession = SparkSession.builder()
-    .appName(appName)
-    .master(master)
-    .getOrCreate()
+class DFRunnerSpec extends FunSuite with Util with TestUtil {
   final val teamsFilePath = "src/main/resources/teams.dat"
   final val scoresFilePath = "src/main/resources/scores.dat"
-
 
   test("Extract"){
     val dfRunner = new DFRunner(spark)
