@@ -1,6 +1,6 @@
 # WinnerCalculator
 
-[![Build Status](https://travis-ci.com/airudah2000/WinnerCalculator.svg?branch=master)](https://travis-ci.com/airudah2000/WinnerCalculator)
+[![Build Status](https://travis-ci.com/airudah2000/WinnerCalculator.svg?token=AxWK7JPPEewkrpghB9yM&branch=master)](https://travis-ci.com/airudah2000/WinnerCalculator)
 
 Implementation for a popular online game.
 
